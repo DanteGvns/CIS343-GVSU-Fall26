@@ -40,4 +40,8 @@ expression
 
 
 https://tree.nathanfriend.com/
+Assignment= ? : 6-Context-Free Grammars.pdf slide 25/58
+
+
+
   Slide -> Lox Expression Syntactic Grammer
