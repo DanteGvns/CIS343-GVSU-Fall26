@@ -1,0 +1,40 @@
+expression
+ binary
+  expression
+   binary
+     expression
+      binary
+       expresion
+        literal
+         1
+       operator
+        "-"
+       expression
+        grouping
+         "("
+         expression
+          binary
+           expresion
+            literal
+             2
+           operator
+            "x"
+           expression
+            literal
+             3
+         ")"
+     operator
+      "<"
+     expression
+      literal
+       4
+  operator
+    "=="
+
+  expression
+     literal
+      "false"
+
+
+
+  Slide -> Lox Expression Syntactic Grammer
