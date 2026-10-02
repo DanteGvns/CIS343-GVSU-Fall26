@@ -1,0 +1,77 @@
+CIS 343 01
+Dante Givens
+Professor Li
+10/02/2026
+
+In class: BNF
+
+breakfast
+  protein
+    crispiness
+      "really"
+      crispiness
+        "really"
+        crispiness
+          "really"
+    "crispy"
+    "bacon"
+  "with"
+  breakfast
+    protein
+      cooked
+        "fried"
+      "eggs"
+    "with"
+    breakfast
+      bread
+        "English muffin"
+    "on the side"
+  "on the side"
+  
+  
+  Final String:
+  really really really crispy bacon with fried eggs with English muffin on the side on the side
+
+
+1 - (2 * 3) < 4 == false
+
+expression
+ binary
+  expression
+   binary
+     expression
+      binary
+       expresion
+        literal
+         1
+       operator
+        "-"
+       expression
+        grouping
+         "("
+         expression
+          binary
+           expresion
+            literal
+             2
+           operator
+            "x"
+           expression
+            literal
+             3
+         ")"
+     operator
+      "<"
+     expression
+      literal
+       4
+  operator
+    "=="
+
+  expression
+     literal
+      "false"
+
+
+
+
