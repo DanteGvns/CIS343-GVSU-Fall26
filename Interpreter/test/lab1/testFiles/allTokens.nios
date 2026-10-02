@@ -1,0 +1,13 @@
+and else false if let nil or show true while
+identifier	_private label123 anderson True _
+0 42 3.14 12.
+"" "hello world" "! @ 123"
+( ) { } , . ;
++ - * /
+! != = == < <= > >=
+// lineCommentText @ "ignored"
+/* outerCommentText
+   /* nestedCommentText */
+   stillInsideComment
+*/
+afterComments

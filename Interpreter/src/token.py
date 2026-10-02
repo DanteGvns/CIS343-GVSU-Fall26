@@ -51,6 +51,10 @@ class Keyword(Token):
         self.keyword = value.upper()
         super().__init__(lineNumber, self.type, value, literal)
         self.value = value
+    
+    #since keywords dont store a literal value in the same way as other tokens, we override the __str__ method to display the keyword in uppercase
+    def __str__(self):
+        return f"{self.type}({self.keyword}) raw={repr(self.raw)} literal={repr(self.literal)} line={self.lineNumber}"
 
 
 class Symbol(Token):
@@ -61,3 +65,7 @@ class Symbol(Token):
         self.symbol = symbolType
         super().__init__(lineNumber, self.type, value, None)
         self.value = value
+
+    #since symbols dont store a literal value in the same way as other tokens, we override the __str__ method to display the symbol type in parentheses
+    def __str__(self):
+        return f"{self.type}({self.symbol}) raw={repr(self.raw)} literal={repr(self.literal)} line={self.lineNumber}"

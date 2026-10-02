@@ -155,12 +155,14 @@ class Scanner:
         #must remember the line since string can be multi-line
         opening_line = self.line
 
-        #keep scanning until we find the closing quote or reach the end of the line/file
-        while self.peek() != '"' and self.peek() != "\n" and not self.isAtEnd():
+        #keep scanning until we find the closing quote or reach the end of the file
+        while self.peek() != '"' and not self.isAtEnd():
+            if self.peek() == "\n":
+                self.line += 1
             self.advance()
 
-        #if we reach the end of the line or file without finding a closing quote, it's an unterminated string
-        if self.isAtEnd() or self.peek() == "\n":
+        #if we reach the end of the file without finding a closing quote, it's an unterminated string
+        if self.isAtEnd():
             self.errors.append(f"[line {opening_line}] Error: Unterminated string.")
             return
 
@@ -172,7 +174,7 @@ class Scanner:
         literal = self.source[self.start + 1:self.current - 1]
 
         #add the string token to the list of tokens
-        self.tokens.append(Word(self.line, raw, literal))
+        self.tokens.append(Word(opening_line, raw, literal))
 
 
     def scanNumber(self):
