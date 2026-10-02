@@ -1,0 +1,14 @@
+word = "This is a word"
+
+//single line comment
+
+
+var1 = 5 + 3.45
+
+/* block of comments
+asdasd paiinonon[[] asd ]/* asdasda
+asdaopopopo */
+we have exited 1 layer of comments
+auuuu */
+
+var2 = 3+ (2 * 4)

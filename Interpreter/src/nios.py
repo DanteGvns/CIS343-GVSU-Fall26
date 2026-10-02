@@ -1,6 +1,6 @@
 import sys
-from token import Token
-from token import Number
+from scanner import Scanner
+
 def main():
     #remove 1 since 0 is the program itself
     arg_count = len(sys.argv) - 1
@@ -11,42 +11,45 @@ def main():
             #loop always getting user input
             while True:
                 userInput = input()
-                print(userInput)
+                scanSource(userInput)
 
         #exit the program with Ctrl + C
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, EOFError):
             sys.exit(0)
 
     elif arg_count == 1:
-        #try to look for and file by the name of the second Arg
+        #try to look for a file by the name of the second Arg
         fileName = sys.argv[1]
         scanFile(fileName)
 
     elif arg_count > 1:
         print("Error: too many args")
-        print("Correct usage of nios: python src/nios file.nios")
+        print("Correct usage of nios: python src/nios.py file.nios")
+
+
+def scanSource(source):
+    scanner = Scanner(source)
+    tokens = scanner.scanTokens()
+
+    for token in tokens:
+        print(token)
+
+    for error in scanner.errors:
+        print(error)
+
 
 def scanFile(inputFile):
+    if not inputFile.endswith(".nios"):
+        print("Error: Nios can only read .nios files.")
+        return
+
     try:
         with open(inputFile, "r") as file:
-            String = ""
-            y = 1
-            while(line := file.readline()):
-                newToken = Token(y, "token")
-                lineNumber = newToken.getLineNumber()
-            
-                String = String + line.replace("\n", "") + "\n" + lineNumber  + "\n"
-                y += 1
-
-            # while(char := file.read(1)):
-            #     String = String + char + "."
-            # content = file.read()
-            # print(content)
+            content = file.read()
+            scanSource(content)
     except FileNotFoundError:
-        print("Error: That file does not exist, please check your file path.")     
-    print(String)    
-    newNumber = Number(3, 14)
-    print(newNumber.getType())
+        print("Error: That file does not exist, please check your file path.")
+
 #run main
 if __name__ == "__main__":
     main()
