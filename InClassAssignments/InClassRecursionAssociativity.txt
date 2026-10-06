@@ -1,0 +1,32 @@
+CIS 343 01
+Dante Givens
+Professor Li
+10/06/2026
+
+In class: Recursion and Associativity
+
+
+
+
+unary -> ("!" | "-") unary
+        | primary;
+
+This one is left associative.
+
+This one is right recursion.
+
+This one cannot be rewritten as left recursion.
+
+
+
+
+
+
+unary -> ("!" | "-")* primary;
+
+This one is not recursion at all.
+
+This one is right associative.
+
+This one cannot be rewritten without changing the prefix/postfix.
+
