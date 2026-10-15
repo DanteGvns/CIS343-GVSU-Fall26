@@ -1,0 +1,25 @@
+CIS 343 Mid Term
+
+
+
+
+post order traversal Ast printer
+
+
+
+Concept of evaluation
+Midterm will ask you to generate a random expression and generate a result
+
+
+
+
+True =1
+False = 0
+
+0 = false 
+not zero = true
+
+
+make an is_truthy(value) function.
+
+
