@@ -92,6 +92,15 @@ class ParserTestCase(unittest.TestCase):
         self.checkBothModes(lexicalErrorCases)
 
 
+    def testInvalidNumberLiteral(self):
+        source = "\u00b2"
+        error = f"[line 1] Error: Invalid number literal {repr(source)}."
+        self.checkBothModes([(source, error)])
+
+        actual = self.runNios(userInput=source + "\n1 + 2\n")
+        self.assertEqual(actual, "REPL mode\n" + error + "\n(+ 1 2)\n")
+
+
     def testMultilineFiles(self):
         for source, expected in multilineCases:
             with self.subTest(source=source):

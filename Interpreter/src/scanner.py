@@ -194,7 +194,12 @@ class Scanner:
         #get the value of everything scanned and make the token
         #the Number class will handle floating point vs integer by itself
         raw = self.source[self.start:self.current]
-        self.tokens.append(Number(self.line, raw))
+        try:
+            self.tokens.append(Number(self.line, raw))
+        except ValueError:
+            self.errors.append(
+                f"[line {self.line}] Error: Invalid number literal {repr(raw)}."
+            )
 
 
     #these are together since they are both full words
