@@ -1,2 +1,4 @@
 #ignore python cache
 *.pyc
+
+.vscode/
