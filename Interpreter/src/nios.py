@@ -1,5 +1,7 @@
 import sys
 from scanner import Scanner
+from parser import Parser, ParseError
+from astPrinter import AstPrinter
 
 def main():
     #remove 1 since 0 is the program itself
@@ -31,11 +33,22 @@ def scanSource(source):
     scanner = Scanner(source)
     tokens = scanner.scanTokens()
 
-    for token in tokens:
-        print(token)
+    #don't parse if the scanner found errors
+    if scanner.errors:
+        for error in scanner.errors:
+            print(error)
+        return
 
-    for error in scanner.errors:
+    try:
+        parser = Parser(tokens)
+        expression = parser.parse()
+    except ParseError as error:
         print(error)
+        return
+
+    #only print the tree if scanning and parsing both worked
+    printer = AstPrinter()
+    print(printer.print(expression))
 
 
 def scanFile(inputFile):
