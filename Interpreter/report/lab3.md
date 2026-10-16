@@ -1,6 +1,6 @@
 # Dante Givens - CIS 343 01 - 10/16/26
 
-## Nios - Lab 3 Parser Test Report
+## Nios - Lab 3 Parser Report
 
 ## Expression Grammar:
 
