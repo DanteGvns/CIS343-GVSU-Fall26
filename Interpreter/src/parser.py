@@ -112,6 +112,13 @@ class Parser:
                 raise self.error("Expected ')' after expression.")
             return Group(expression)
 
+        #these operators need something on their left, but - can be unary so leave it out
+        if token.type == "SYMBOL" and token.symbol in (
+            "PLUS", "STAR", "SLASH", "EQUAL_EQUAL", "BANG_EQUAL",
+            "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL"
+        ):
+            raise self.error(f"Missing left operand before {repr(token.raw)}.")
+
         #catch anything that can't start an expression, including EOF if an operand is missing
         raise self.error("Expected an expression.")
 
