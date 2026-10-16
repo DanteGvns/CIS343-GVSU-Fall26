@@ -1,6 +1,7 @@
 #nios expression grammar
 #each rule calls the next one to handle higher priority operators first
-#expression -> equality ;
+#expression -> comma ;
+#comma      -> equality ( "," equality )* ;
 #equality   -> comparison ( ("==" | "!=") comparison )* ;
 #comparison -> term ( (">" | ">=" | "<" | "<=") term )* ;
 #term       -> factor ( ("+" | "-") factor )* ;
@@ -35,8 +36,19 @@ class Parser:
 
 
     def expression(self):
-        #equality has the lowest priority so just return self
-        return self.equality()
+        #comma has the lowest priority
+        return self.comma()
+
+
+    def comma(self):
+        expression = self.equality()
+
+        #keep combining from the left so 1, 2, 3 becomes (, (, 1 2) 3)
+        while self.matchSymbols("COMMA"):
+            operator = self.previous()
+            right = self.equality()
+            expression = Binary(expression, operator, right)
+        return expression
 
 
     def equality(self):
@@ -114,7 +126,7 @@ class Parser:
 
         #these operators need something on their left, but - can be unary so leave it out
         if token.type == "SYMBOL" and token.symbol in (
-            "PLUS", "STAR", "SLASH", "EQUAL_EQUAL", "BANG_EQUAL",
+            "COMMA", "PLUS", "STAR", "SLASH", "EQUAL_EQUAL", "BANG_EQUAL",
             "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL"
         ):
             raise self.error(f"Missing left operand before {repr(token.raw)}.")
