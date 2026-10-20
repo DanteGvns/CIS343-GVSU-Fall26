@@ -15,7 +15,7 @@ Midterm will ask you to generate a random expression and generate a result
 
 
 
-True =1
+True = 1
 False = 0
 
 0 = false 
