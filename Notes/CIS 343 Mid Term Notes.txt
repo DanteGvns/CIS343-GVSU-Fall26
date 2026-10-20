@@ -1,9 +1,11 @@
 CIS 343 Mid Term
 
 
+10% of midterm is evaluation using our code
 
+90% is the handwritten similar to the example on blackboard
 
-post order traversal Ast printer
+post order traversal AST printer
 
 
 
