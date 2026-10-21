@@ -161,6 +161,42 @@ class ParserTestCase(unittest.TestCase):
                 self.assertEqual(self.runNios(fileName=self.inputFile), expected + "\n")
 
 
+    def testBooleanNumberEquality(self):
+        cases = [
+            ("3 == true", "True"),
+            ("true == 3", "True"),
+            ("-3 == true", "True"),
+            ("true == 0.5", "True"),
+            ("0 == false", "True"),
+            ("false == 0.0", "True"),
+            ("0 == true", "False"),
+            ("true == 0", "False"),
+            ("3 == false", "False"),
+            ("false == -3", "False"),
+            ("3 != true", "False"),
+            ("true != -3", "False"),
+            ("0 != false", "False"),
+            ("false != 0", "False"),
+            ("3 != false", "True"),
+            ("true != 0", "True"),
+            ("3 == 1", "False"),
+            ("true == false", "False"),
+            ("true == true", "True"),
+            ("3 + true == 5", "False"),
+            ("3 + true", "4"),
+            ("3 + false", "3"),
+            ("nil == false", "False"),
+            ('"hello" == true', "False"),
+        ]
+        for source, expected in cases:
+            with self.subTest(source=source):
+                self.inputFile.write_text(source, encoding="utf-8")
+                self.assertEqual(self.runNios(fileName=self.inputFile), expected + "\n")
+                self.assertEqual(
+                    self.runNios(userInput=source + "\n"), "REPL mode\n" + expected + "\n"
+                )
+
+
     def testEvaluationTrace(self):
         source = "1 + 2 / 3 * 4 == 23"
         self.inputFile.write_text(source, encoding="utf-8")

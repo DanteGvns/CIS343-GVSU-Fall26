@@ -68,10 +68,14 @@ class Evaluator:
                     value = left < right
                 else:
                     value = left <= right
-            elif symbol == "EQUAL_EQUAL":
+            elif symbol in ("EQUAL_EQUAL", "BANG_EQUAL"):
+                if isinstance(left, bool) and isinstance(right, (int, float)):
+                    right = is_truthy(right)
+                elif isinstance(right, bool) and isinstance(left, (int, float)):
+                    left = is_truthy(left)
                 value = left == right
-            elif symbol == "BANG_EQUAL":
-                value = left != right
+                if symbol == "BANG_EQUAL":
+                    value = not value
             else:
                 raise self.error(operator, "Unsupported operator.")
 
