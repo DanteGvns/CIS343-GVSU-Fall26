@@ -54,12 +54,11 @@ def scanSource(source, showAst=False, parseOnly=False, scanOnly=False):
         printTokens(tokens)
         return
 
-    try:
-        parser = Parser(tokens)
-        statements = parser.parse()
-    except ParseError as error:
+    parser = Parser(tokens)
+    statements = parser.parse()
+
+    for error in parser.errors:
         print(error)
-        return
 
     #parser mode shows the tree without evaluating it
     if parseOnly:
@@ -68,6 +67,10 @@ def scanSource(source, showAst=False, parseOnly=False, scanOnly=False):
         for statement in statements:
             print(printer.print(statement))
 
+        return
+
+    #if there is an error we only need to parse for syntax errors
+    if parser.errors:
         return
 
     #show the starting expression and tree before evaluating anything

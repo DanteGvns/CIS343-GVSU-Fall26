@@ -27,15 +27,33 @@ class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
         self.current = 0
+        self.errors = []
 
 
     def parse(self):
         statements = []
 
         while not self.isAtEnd():
-            statements.append(self.statement())
+            #try statements one at a time so we can collect erros during fallback mode
+            try:
+                statements.append(self.statement())
+            except ParseError as error:
+                self.errors.append(str(error))
+                self.fallbackMode()
 
         return statements
+
+    def fallbackMode(self):
+        while not self.isAtEnd():
+            token = self.peek()
+
+            if token.type == "KEYWORD" and token.keyword == "SHOW":
+                return
+
+            self.advance()
+
+            if token.type == "SYMBOL" and token.symbol == "SEMICOLON":
+                return
 
     def statement(self):
         token = self.peek()
