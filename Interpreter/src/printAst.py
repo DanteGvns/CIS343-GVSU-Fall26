@@ -3,7 +3,7 @@ import sys
 from astPrinter import AstPrinter
 from expression import Binary, Group, Literal, Unary
 from token import Symbol
-
+from statement import ExpressionStatement, ShowStatement
 
 
 def getExamples():

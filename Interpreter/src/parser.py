@@ -1,5 +1,8 @@
 #nios expression grammar
 #each rule calls the next one to handle higher priority operators first
+#statement      -> printStmt | expressionStmt ;
+#showStmt      -> "show" expression ";" ;
+#expressionStmt -> expression ";" ;
 #expression -> comma ;
 #comma      -> equality ( "," equality )* ;
 #equality   -> comparison ( ("==" | "!=") comparison )* ;
@@ -13,7 +16,7 @@
 #operators at the same binary level group from left to right, like (8 - 3) - 1
 
 from expression import Binary, Group, Literal, Unary
-
+from statement import ExpressionStatement, ShowStatement
 
 class ParseError(Exception):
     #separate error type so we can catch parser errors in main
@@ -27,12 +30,39 @@ class Parser:
 
 
     def parse(self):
+        statements = []
+
+        while not self.isAtEnd():
+            statements.append(self.statement())
+
+        return statements
+
+    def statement(self):
+        token = self.peek()
+
+        if token.type == "KEYWORD" and token.keyword == "SHOW":
+            self.advance()
+            return self.showStatment()
+
+        #if its now a SHOW/print then it is treated as an expression
+        return self.expressionStatement()
+
+    def showStatement(self):
         expression = self.expression()
 
-        #we only want one expression, so there should be nothing left except EOF
-        if not self.isAtEnd():
-            raise self.error("Unexpected token after expression.")
-        return expression
+        if not self.matchSymbols("SEMICOLON"):
+            raise self.error("Expected ';' after SHOW statement.")
+
+        return ShowStatement(expression)
+
+    def expressionStatement(self):
+        expression = self.expression()
+
+        if not self.matchSymbols("SEMICOLON"):
+            raise self.error("Expected ';' after expression.")
+
+        return ExpressionStatement(expression)
+
 
 
     def expression(self):

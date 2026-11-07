@@ -1,6 +1,6 @@
 from astPrinter import AstPrinter
 from expression import Binary, Group, Literal, Unary
-
+from statement import ExpressionStatement, ShowStatement
 
 class EvaluationError(Exception):
     #lets nios print evaluation errors without a Python traceback
@@ -16,6 +16,16 @@ class Evaluator:
     def __init__(self, on_step=None):
         self.on_step = on_step
 
+    #handle expression with evaluate as normal, but now make ShowStatements print by reusing the AST Printer
+    def execute(self, statement):
+        if isinstance(statement, ExpressionStatement):
+            self.evaluate(statement.expression)
+
+        elif isinstance(statement, ShowStatement):
+            print(AstPrinter().print(Literal(value)))
+
+        else:
+            raise EvaluationError("Unsupported statement type.")
 
     def evaluate(self, expression):
         if isinstance(expression, Literal):

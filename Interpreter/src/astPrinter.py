@@ -1,10 +1,17 @@
 import json
 
 from expression import Binary, Group, Literal, Unary
-
+from statement import ExpressionStatement, ShowStatement
 
 class AstPrinter:
     def print(self, expression):
+        if isinstance(expression, ExpressionStatement):
+            return self.parenthesize("expr", expression.expression)
+
+        if isinstance(expression, ShowStatement):
+            return self.parenthesize("show", expression.expression)
+
+
         #use the operator text instead of the full token output
         if isinstance(expression, Binary):
             return self.parenthesize(

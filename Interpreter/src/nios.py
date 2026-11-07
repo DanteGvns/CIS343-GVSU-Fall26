@@ -56,41 +56,42 @@ def scanSource(source, showAst=False, parseOnly=False, scanOnly=False):
 
     try:
         parser = Parser(tokens)
-        expression = parser.parse()
+        statements = parser.parse()
     except ParseError as error:
         print(error)
         return
 
     #parser mode shows the tree without evaluating it
     if parseOnly:
-        print(AstPrinter().print(expression))
+        printer = AstPrinter()
+
+        for statement in statements:
+            print(printer.print(statement))
+
         return
 
     #show the starting expression and tree before evaluating anything
     if showAst:
         print(source.strip())
-        print(AstPrinter().print(expression))
-        trace = TracePrinter()
 
-        def show_step(node, value):
-            trace.reduced[node] = value
-            #the root is the final answer, so don't print it twice
-            if node is not expression:
-                print(trace.print(expression))
+    for statement in statements:
+        if showAst:
+            print(AstPrinter().print(statement))
+            trace = TracePrinter()
 
-        evaluator = Evaluator(on_step=show_step)
-    else:
-        evaluator = Evaluator()
+            def show_step(node, value):
+                trace.reduced[node] = value
+                print(trace.print(statement))
 
-    try:
-        result = evaluator.evaluate(expression)
-        #keep nil and quoted words in Nios format, but print booleans as True or False
-        if result is None or isinstance(result, str):
-            print(AstPrinter().print(Literal(result)))
+            evaluator = Evaluator(on_step=show_step)
         else:
-            print(result)
-    except EvaluationError as error:
-        print(error)
+            evaluator = Evaluator()
+
+        try:
+            evaluator.execute(statement)
+        except EvaluationError as error:
+            print(error)
+            return
 
 
 def scanFile(inputFile, showAst=False, parseOnly=False, scanOnly=False):

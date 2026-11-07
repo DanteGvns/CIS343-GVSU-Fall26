@@ -1,0 +1,5 @@
+4 + 2;
+show "one";
+show true;
+show 1 + 2;
+show nil;
