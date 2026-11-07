@@ -22,6 +22,7 @@ class Evaluator:
             self.evaluate(statement.expression)
 
         elif isinstance(statement, ShowStatement):
+            value = self.evaluate(statement.expression)
             print(AstPrinter().print(Literal(value)))
 
         else:

@@ -42,7 +42,7 @@ class Parser:
 
         if token.type == "KEYWORD" and token.keyword == "SHOW":
             self.advance()
-            return self.showStatment()
+            return self.showStatement()
 
         #if its now a SHOW/print then it is treated as an expression
         return self.expressionStatement()
