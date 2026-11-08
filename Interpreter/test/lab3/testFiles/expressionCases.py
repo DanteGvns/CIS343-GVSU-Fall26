@@ -73,7 +73,7 @@ syntaxErrorCases = [
     ("(1 + 2", "[line 1] Error at end of input: Expected ')' after expression."),
     ("((1)", "[line 1] Error at end of input: Expected ')' after expression."),
     ("(1 2)", "[line 1] Error at '2': Expected ')' after expression."),
-    ("1)", "[line 1] Error at ')': Unexpected token after expression."),
+    ("1)", "[line 1] Error at ')': Expected ';' after expression."),
     ("()", "[line 1] Error at ')': Expected an expression."),
     ("1 +", "[line 1] Error at end of input: Expected an expression."),
     ("!", "[line 1] Error at end of input: Expected an expression."),
@@ -97,15 +97,11 @@ syntaxErrorCases = [
     ("! == 2", "[line 1] Error at '==': Missing left operand before '=='."),
     ("*", "[line 1] Error at '*': Missing left operand before '*'."),
     ("name", "[line 1] Error at 'name': Expected an expression."),
-    ("show 1", "[line 1] Error at 'show': Expected an expression."),
-    ("1 2", "[line 1] Error at '2': Unexpected token after expression."),
-    ("1;", "[line 1] Error at ';': Unexpected token after expression."),
-    ("1 = 2", "[line 1] Error at '=': Unexpected token after expression."),
-    ("true and false", "[line 1] Error at 'and': Unexpected token after expression."),
-    ("true or false", "[line 1] Error at 'or': Unexpected token after expression."),
-    ("", "[line 1] Error at end of input: Expected an expression."),
-    ("   ", "[line 1] Error at end of input: Expected an expression."),
-    ("// only a comment", "[line 1] Error at end of input: Expected an expression.")
+    ("show 1", "[line 1] Error at end of input: Expected ';' after SHOW statement."),
+    ("1 2", "[line 1] Error at '2': Expected ';' after expression."),
+    ("1 = 2", "[line 1] Error at '=': Expected ';' after expression."),
+    ("true and false", "[line 1] Error at 'and': Expected ';' after expression."),
+    ("true or false", "[line 1] Error at 'or': Expected ';' after expression.")
 ]
 
 lexicalErrorCases = [
@@ -125,7 +121,7 @@ multilineCases = [
     ("1 /* outer\n/* inner */ done */ + 2 // done", "(+ 1 2)"),
     ("1 +\n* 2", "[line 2] Error at '*': Missing left operand before '*'."),
     ("(1 +\n2", "[line 2] Error at end of input: Expected ')' after expression."),
-    ("1\n2", "[line 2] Error at '2': Unexpected token after expression."),
+    ("1\n2", "[line 2] Error at '2': Expected ';' after expression."),
     ("1 +\n@ 2", "[line 2] Error: Unexpected character '@'."),
     ('\n"unfinished', "[line 2] Error: Unterminated string."),
     ("1\n/* unfinished", "[line 2] Error: Unterminated block comment.")

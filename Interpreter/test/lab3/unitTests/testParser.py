@@ -52,8 +52,11 @@ class ParserTestCase(unittest.TestCase):
         return result.stdout
 
 
-    def checkBothModes(self, cases):
+    def checkBothModes(self, cases, validExpressions=True):
         for source, expected in cases:
+            if validExpressions:
+                source += ";"
+                expected = f"(expr {expected})"
             with self.subTest(source=source, mode="file"):
                 self.inputFile.write_text(source, encoding="utf-8")
                 actual = self.runNios(fileName=self.inputFile, flags=("-p",))
@@ -86,38 +89,41 @@ class ParserTestCase(unittest.TestCase):
 
     def testSyntaxErrors(self):
 
-        self.checkBothModes(syntaxErrorCases)
+        self.checkBothModes(syntaxErrorCases, validExpressions=False)
 
 
     def testLexicalErrors(self):
-        self.checkBothModes(lexicalErrorCases)
+        self.checkBothModes(lexicalErrorCases, validExpressions=False)
 
 
     def testInvalidNumberLiteral(self):
         source = "\u00b2"
         error = f"[line 1] Error: Invalid number literal {repr(source)}."
-        self.checkBothModes([(source, error)])
+        self.checkBothModes([(source, error)], validExpressions=False)
 
-        actual = self.runNios(userInput=source + "\n1 + 2\n")
+        actual = self.runNios(userInput=source + "\nshow 1 + 2;\n")
         self.assertEqual(actual, "REPL mode\n" + error + "\n3\n")
 
 
     def testMultilineFiles(self):
         for source, expected in multilineCases:
             with self.subTest(source=source):
+                if not expected.startswith("[line "):
+                    source += "\n;"
+                    expected = f"(expr {expected})"
                 self.inputFile.write_text(source, encoding="utf-8")
                 actual = self.runNios(fileName=self.inputFile, flags=("-p",))
                 self.assertEqual(actual, expected + "\n")
 
 
     def testInteractiveRecovery(self):
-        inputs = ["2 * 3"]
+        inputs = ["show 2 * 3;"]
         expected = ["REPL mode", "6"]
 
         for source, error in syntaxErrorCases + lexicalErrorCases:
             inputs.append(source)
             expected.append(error)
-            inputs.append("1 + 2")
+            inputs.append("show 1 + 2;")
             expected.append("3")
 
         userInput = "\n".join(inputs) + "\n"
@@ -126,7 +132,7 @@ class ParserTestCase(unittest.TestCase):
 
 
     def testInteractiveInputEndsAtEachLine(self):
-        actual = self.runNios(userInput="(1 +\n2\n3 * 4\n")
+        actual = self.runNios(userInput="(1 +\nshow 2;\nshow 3 * 4;\n")
         expected = (
             "REPL mode\n"
             "[line 1] Error at end of input: Expected an expression.\n"
@@ -138,26 +144,26 @@ class ParserTestCase(unittest.TestCase):
 
     def testInteractiveEndOfInput(self):
         self.assertEqual(self.runNios(userInput=""), "REPL mode\n")
-        self.assertEqual(self.runNios(userInput="1 + 2"), "REPL mode\n3\n")
+        self.assertEqual(self.runNios(userInput="show 1 + 2;"), "REPL mode\n3\n")
 
 
     def testEvaluation(self):
         cases = [
-            ("1 + 2 / 3 * 4 == 23", "False"),
-            ("true == 1", "True"),
-            ("false == 0", "True"),
+            ("1 + 2 / 3 * 4 == 23", "false"),
+            ("true == 1", "true"),
+            ("false == 0", "true"),
             ("nil", "nil"),
             ('"hello"', '"hello"'),
-            ("!0", "True"),
-            ("!2", "False"),
-            ("!nil", "True"),
-            ("!(1 < 2)", "False"),
+            ("!0", "true"),
+            ("!2", "false"),
+            ("!nil", "true"),
+            ("!(1 < 2)", "false"),
             ("(3 + 4) * 2", "14"),
             ("1, 2 + 3", "5"),
         ]
         for source, expected in cases:
             with self.subTest(source=source):
-                self.inputFile.write_text(source, encoding="utf-8")
+                self.inputFile.write_text(f"show {source};", encoding="utf-8")
                 self.assertEqual(self.runNios(fileName=self.inputFile), expected + "\n")
 
 
@@ -190,6 +196,8 @@ class ParserTestCase(unittest.TestCase):
         ]
         for source, expected in cases:
             with self.subTest(source=source):
+                expected = expected.lower()
+                source = f"show {source};"
                 self.inputFile.write_text(source, encoding="utf-8")
                 self.assertEqual(self.runNios(fileName=self.inputFile), expected + "\n")
                 self.assertEqual(
@@ -198,18 +206,19 @@ class ParserTestCase(unittest.TestCase):
 
 
     def testEvaluationTrace(self):
-        source = "1 + 2 / 3 * 4 == 23"
+        source = "show 1 + 2 / 3 * 4 == 23;"
         self.inputFile.write_text(source, encoding="utf-8")
         expected = (
             source + "\n"
-            "(== (+ 1 (* (/ 2 3) 4)) 23)\n"
-            "(== (+ 1 (* (0.667) 4)) 23)\n"
-            "(== (+ 1 (2.667)) 23)\n"
-            "(== (3.667) 23)\n"
-            "False\n"
+            "(show (== (+ 1 (* (/ 2 3) 4)) 23))\n"
+            "(show (== (+ 1 (* (0.667) 4)) 23))\n"
+            "(show (== (+ 1 (2.667)) 23))\n"
+            "(show (== (3.667) 23))\n"
+            "(show (false))\n"
+            "false\n"
         )
         self.assertEqual(self.runNios(fileName=self.inputFile, flags=("-a",)), expected)
-        self.assertEqual(self.runNios(fileName=self.inputFile), "False\n")
+        self.assertEqual(self.runNios(fileName=self.inputFile), "false\n")
 
 
     def testEvaluationErrors(self):
@@ -220,7 +229,7 @@ class ParserTestCase(unittest.TestCase):
         ]
         for source, expected in cases:
             with self.subTest(source=source):
-                self.inputFile.write_text(source, encoding="utf-8")
+                self.inputFile.write_text(f"show {source};", encoding="utf-8")
                 self.assertEqual(self.runNios(fileName=self.inputFile), expected + "\n")
 
 
@@ -238,6 +247,9 @@ class ParserTestCase(unittest.TestCase):
         ]
         for source, flag, expected in cases:
             with self.subTest(source=source, flag=flag):
+                if flag == "-p":
+                    source += ";"
+                    expected = f"(expr {expected})"
                 self.inputFile.write_text(source, encoding="utf-8")
                 self.assertEqual(
                     self.runNios(fileName=self.inputFile, flags=(flag,)), expected + "\n"

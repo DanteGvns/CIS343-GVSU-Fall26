@@ -25,6 +25,13 @@ def main():
         )
         results.append((labName, result.returncode))
 
+    print("\n=== End-to-end tests ===", flush=True)
+    result = subprocess.run(
+        [sys.executable, "-B", str(testFolder / "testEndToEnd.py")],
+        cwd=testFolder.parent
+    )
+    results.append(("end-to-end", result.returncode))
+
     print("\n=== Unit Test Summary ===", flush=True)
     for labName, returncode in results:
         status = "PASS" if returncode == 0 else "FAIL"
