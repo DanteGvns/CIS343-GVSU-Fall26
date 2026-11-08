@@ -45,7 +45,7 @@ class StatementsTestCase(unittest.TestCase):
     def testRequiredValidFile(self):
         self.assertEqual(
             self.runNios((LAB4_FOLDER / "statements.nios",)),
-            '"one"\ntrue\n3\nnil\n'
+            'one\ntrue\n3\nnil\n'
         )
 
     def testRequiredInvalidFile(self):
@@ -69,8 +69,10 @@ class StatementsTestCase(unittest.TestCase):
     def testLiteralPrinting(self):
         cases = [
             ("12", "12"), ("12.5", "12.5"), ("true", "true"),
-            ("false", "false"), ("nil", "nil"), ('"yes"', '"yes"'),
-            ('""', '""'), ('"a\\nb"', '"a\\\\nb"')
+            ("false", "false"), ("nil", "nil"), ('"yes"', "yes"),
+            ('""', ""), ('"a\\nb"', 'a\\nb'),
+            ('"test"', "test"), ('"  spaced  "', "  spaced  "),
+            ('("grouped")', "grouped"), ('1, "last"', "last")
         ]
         for expression, expected in cases:
             with self.subTest(expression=expression):
@@ -84,7 +86,7 @@ class StatementsTestCase(unittest.TestCase):
     def testMixedStatementsExecuteInOrder(self):
         self.checkBothModes(
             '1 + 2; show 4; false; show "last"; nil;',
-            '4\n"last"\n'
+            '4\nlast\n'
         )
 
     def testAllExpressionOperatorsStillWork(self):
@@ -116,8 +118,8 @@ class StatementsTestCase(unittest.TestCase):
             "(show (* (group (+ 1 2)) 3))\n(expr 4)\n(show true)\n"
         )
 
-    def testMultilineStringIsPrintedOnOneLine(self):
-        self.assertEqual(self.runSource('show "a\nb";'), '"a\\nb"\n')
+    def testMultilineStringPreservesNewlines(self):
+        self.assertEqual(self.runSource('show "a\nb";'), 'a\nb\n')
 
     def testManyStatementsPreserveOrder(self):
         source = " ".join(f"{number}; show {number};" for number in range(100))

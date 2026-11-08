@@ -153,7 +153,7 @@ class ParserTestCase(unittest.TestCase):
             ("true == 1", "true"),
             ("false == 0", "true"),
             ("nil", "nil"),
-            ('"hello"', '"hello"'),
+            ('"hello"', 'hello'),
             ("!0", "true"),
             ("!2", "false"),
             ("!nil", "true"),

@@ -16,14 +16,16 @@ class Evaluator:
     def __init__(self, on_step=None):
         self.on_step = on_step
 
-    #handle expression with evaluate as normal, but now make ShowStatements print by reusing the AST Printer
     def execute(self, statement):
         if isinstance(statement, ExpressionStatement):
             self.evaluate(statement.expression)
 
         elif isinstance(statement, ShowStatement):
             value = self.evaluate(statement.expression)
-            print(AstPrinter().print(Literal(value)))
+            if isinstance(value, str):
+                print(value)
+            else:
+                print(AstPrinter().print(Literal(value)))
 
         else:
             raise EvaluationError("Unsupported statement type.")
