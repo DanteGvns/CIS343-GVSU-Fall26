@@ -1,0 +1,18 @@
+CIS 343 01
+Dante Givens
+Professor Li
+11/19/2026
+
+In class: For Loop BNF
+
+
+You can either declare the variable in the for loop (varDecl option),
+use an already defined varible (exprStmt option),
+or even just pass in a ";" (dummy for loop but valid).
+
+
+
+forStmt -> "for" "(" (varDecl | exprStmt | ";")
+	    expression? ";" 
+	    expression? ")" statement;
+	    
