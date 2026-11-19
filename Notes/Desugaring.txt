@@ -1,0 +1,22 @@
+Desugaring for While loop and For loop in the parser
+
+used to turn the string of tokens into the while loop AST tree
+
+Parse the:
+initializer
+condition
+increment
+body
+
+
+Block node - Holding list of statements
+         Block  
+      |          |
+    init     whileStmt
+            |         |
+         condi      Block
+                  |        |
+                stmt	  exprStmt
+                           |
+                         incre.
+
