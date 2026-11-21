@@ -1,3 +1,4 @@
+# --- start AI code --
 import subprocess
 import sys
 import unittest
@@ -33,6 +34,22 @@ class VariablesTestCase(unittest.TestCase):
             "REPL mode\n[line 1] Error at '2': Expected ';' after expression.\n3\n"
         )
 
+    def testTextbookBlockScope(self):
+        self.checkFile(
+            "blockScope",
+            "inner a\nouter b\nglobal c\n"
+            "outer a\nouter b\nglobal c\n"
+            "global a\nglobal b\nglobal c\n"
+        )
+
+    def testAssignmentUsesNearestScope(self):
+        output = self.runNios(
+            userInput="let a = 1; let b = 2;\n"
+            "{ let a = a + 1; { a = 3; b = 4; } show a; }\n"
+            "show a; show b;\n"
+        )
+        self.assertEqual(output, "REPL mode\n3\n1\n4\n")
+
     def testAssignmentPrecedence(self):
         output = self.runNios(userInput="var a; show a = 2 + 3, a == 5;\nshow a;\n")
         self.assertEqual(output, "REPL mode\ntrue\n5\n")
@@ -49,16 +66,26 @@ class VariablesTestCase(unittest.TestCase):
                 "[line 4] Error at 'show': Expected ';' after variable declaration.\n"
                 "[line 5] Error at ';': Expected an expression.\n"
             ),
+            "unmatchedOpen": "[line 3] Error at end of input: Expected '}' to close block.\n",
+            "unmatchedClose": "[line 1] Error at '}': Unmatched '}'.\n"
         }
         for name, expected in cases.items():
             with self.subTest(name=name):
                 self.checkFile(name, expected)
+
+    def testRecoveryKeepsBlockBoundaries(self):
+        self.assertEqual(
+            self.runNios("-p", userInput="{ let a = } show 2;\n"),
+            "REPL mode\n[line 1] Error at '}': Expected an expression.\n"
+            "(block)\n(show 2)\n"
+        )
 
     def testRuntimeErrors(self):
         self.checkFile(
             "redeclaration",
             "[line 2] Error at 'count': Variable already declared in this scope.\n"
         )
+        self.checkFile("scopeErrors", "inside\n[line 5] Error at 'local': Undefined variable.\n")
         for source in ("show x; var x = 1;", "var x = x;", "x = 1; var x;"):
             with self.subTest(source=source):
                 self.assertEqual(
@@ -66,10 +93,16 @@ class VariablesTestCase(unittest.TestCase):
                     "REPL mode\n[line 1] Error at 'x': Undefined variable.\n"
                 )
 
+    def testBlockScopeIsCleanedUpAfterError(self):
+        self.assertEqual(
+            self.runNios(userInput="let x = 1;\n{ let x = 2; show missing; }\nshow x;\n"),
+            "REPL mode\n[line 1] Error at 'missing': Undefined variable.\n1\n"
+        )
+
     def testAstAndTraceModes(self):
         self.assertEqual(
-            self.runNios("-p", userInput="let a; a = 2; show a;\n"),
-            "REPL mode\n(var a)\n(expr (= a 2))\n(show a)\n"
+            self.runNios("-p", userInput="let a; { a = 2; show a; }\n"),
+            "REPL mode\n(var a)\n(block (expr (= a 2)) (show a))\n"
         )
         self.assertEqual(
             self.runNios("-a", userInput="var a = 1; show a;\n"),
@@ -79,3 +112,5 @@ class VariablesTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+# --- end AI code ---

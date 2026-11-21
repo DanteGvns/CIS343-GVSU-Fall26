@@ -1,3 +1,4 @@
+# --- start AI code --
 import sys
 import unittest
 from pathlib import Path
@@ -8,3 +9,5 @@ if __name__ == "__main__":
     tests = unittest.defaultTestLoader.discover(unitTestFolder, pattern="test*.py")
     result = unittest.TextTestRunner(verbosity=2).run(tests)
     sys.exit(0 if result.wasSuccessful() else 1)
+
+# --- end AI code ---

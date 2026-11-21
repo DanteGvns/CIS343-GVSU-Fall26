@@ -3,8 +3,9 @@
 #program       -> declaration* EOF ;
 #declaration   -> varDecl | statement ;
 #varDecl       -> ("let" | "var") LABEL ("=" expression)? ";" ;
-#statement     -> showStmt | expressionStmt ;
+#statement     -> showStmt | block | expressionStmt ;
 #showStmt      -> "show" expression ";" ;
+#block         -> "{" declaration* "}" ;
 #expressionStmt -> expression ";" ;
 #expression -> comma ;
 #comma      -> assignment ( "," assignment )* ;
@@ -20,7 +21,7 @@
 #operators at the same binary level group from left to right, like (8 - 3) - 1
 
 from expression import Assign, Binary, Group, Literal, Unary, Variable
-from statement import ExpressionStatement, ShowStatement, VarStatement
+from statement import BlockStatement, ExpressionStatement, ShowStatement, VarStatement
 
 class ParseError(Exception):
     #separate error type so we can catch parser errors in main
@@ -35,9 +36,19 @@ class Parser:
 
 
     def parse(self):
+        return self.parseStatements()
+
+    def parseStatements(self, inBlock=False):
         statements = []
 
         while not self.isAtEnd():
+            if self.checkSymbols("RIGHT_BRACE"):
+                if inBlock:
+                    break
+                self.errors.append(str(self.error("Unmatched '}'.")))
+                self.advance()
+                continue
+
             try:
                 statements.append(self.declaration())
             except ParseError as error:
@@ -49,6 +60,10 @@ class Parser:
     def fallbackMode(self):
         while not self.isAtEnd():
             token = self.peek()
+
+            #leave braces for the statement loop so recovery doesn't change the scope
+            if self.checkSymbols("LEFT_BRACE", "RIGHT_BRACE"):
+                return
 
             if token.type == "KEYWORD" and token.keyword in ("SHOW", "LET", "VAR"):
                 return
@@ -84,6 +99,12 @@ class Parser:
         if token.type == "KEYWORD" and token.keyword == "SHOW":
             self.advance()
             return self.showStatement()
+
+        if self.matchSymbols("LEFT_BRACE"):
+            statements = self.parseStatements(inBlock=True)
+            if not self.matchSymbols("RIGHT_BRACE"):
+                raise self.error("Expected '}' to close block.")
+            return BlockStatement(statements)
 
         return self.expressionStatement()
 
@@ -221,13 +242,15 @@ class Parser:
 
 
     def matchSymbols(self, *symbolTypes):
-        token = self.peek()
-
-        #type only says SYMBOL, so check symbol to see which operator it actually is
-        if token.type == "SYMBOL" and token.symbol in symbolTypes:
+        if self.checkSymbols(*symbolTypes):
             self.advance()
             return True
         return False
+
+
+    def checkSymbols(self, *symbolTypes):
+        token = self.peek()
+        return token.type == "SYMBOL" and token.symbol in symbolTypes
 
 
     #check the current token without consuming it

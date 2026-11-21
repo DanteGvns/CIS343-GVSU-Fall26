@@ -1,0 +1,5 @@
+{
+    var local = "inside";
+    show local;
+}
+show local;

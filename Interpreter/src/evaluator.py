@@ -1,6 +1,6 @@
 from astPrinter import AstPrinter
 from expression import Assign, Binary, Group, Literal, Unary, Variable
-from statement import ExpressionStatement, ShowStatement, VarStatement
+from statement import BlockStatement, ExpressionStatement, ShowStatement, VarStatement
 
 class EvaluationError(Exception):
     #lets nios print evaluation errors without a Python traceback
@@ -37,6 +37,14 @@ class Evaluator:
             if statement.initializer is not None:
                 value = self.evaluate(statement.initializer)
             scope[name.raw] = value
+
+        elif isinstance(statement, BlockStatement):
+            self.scopes.append({})
+            try:
+                for child in statement.statements:
+                    self.execute(child)
+            finally:
+                self.scopes.pop()
 
         else:
             raise EvaluationError("Unsupported statement type.")
