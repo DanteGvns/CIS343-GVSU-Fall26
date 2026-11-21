@@ -1,0 +1,9 @@
+let count = 2;
+show count;
+count = count + 3;
+show count;
+var saved;
+show saved;
+show saved = count = 9;
+show count;
+show saved;

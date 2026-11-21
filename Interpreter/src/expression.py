@@ -28,3 +28,14 @@ class Group(Expression):
     #keep grouping in the tree so the printer can show the hierarchy
     def __init__(self, expression):
         self.expression = expression
+
+
+class Variable(Expression):
+    def __init__(self, name):
+        self.name = name
+
+
+class Assign(Expression):
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value

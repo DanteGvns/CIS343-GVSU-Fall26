@@ -153,19 +153,20 @@ class StatementsTestCase(unittest.TestCase):
                 )
 
     def testKeywordCaseAndUnquotedWords(self):
-        for source, token in (("SHOW 12;", "SHOW"), ("show yes;", "yes")):
-            with self.subTest(source=source):
-                self.checkBothModes(
-                    source, f"[line 1] Error at '{token}': Expected an expression.\n"
-                )
+        self.checkBothModes(
+            "SHOW 12;",
+            "[line 1] Error at '12': Expected ';' after expression.\n"
+        )
+        self.checkBothModes(
+            "show yes;",
+            "[line 1] Error at 'yes': Undefined variable.\n"
+        )
 
-    def testUnsupportedAssignmentAndImplicitMultiplication(self):
-        for source, token in (("1 = 1;", "="), ("1(2 * 4);", "(")):
-            with self.subTest(source=source):
-                self.checkBothModes(
-                    source,
-                    f"[line 1] Error at '{token}': Expected ';' after expression.\n"
-                )
+    def testUnsupportedImplicitMultiplication(self):
+        self.checkBothModes(
+            "1(2 * 4);",
+            "[line 1] Error at '(': Expected ';' after expression.\n"
+        )
 
     def testRuntimeErrors(self):
         cases = [

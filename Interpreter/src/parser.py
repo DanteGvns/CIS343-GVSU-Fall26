@@ -1,22 +1,26 @@
 #nios expression grammar
 #each rule calls the next one to handle higher priority operators first
-#statement      -> printStmt | expressionStmt ;
+#program       -> declaration* EOF ;
+#declaration   -> varDecl | statement ;
+#varDecl       -> ("let" | "var") LABEL ("=" expression)? ";" ;
+#statement     -> showStmt | expressionStmt ;
 #showStmt      -> "show" expression ";" ;
 #expressionStmt -> expression ";" ;
 #expression -> comma ;
-#comma      -> equality ( "," equality )* ;
+#comma      -> assignment ( "," assignment )* ;
+#assignment -> equality ( "=" assignment )? ; only a LABEL can go before "="
 #equality   -> comparison ( ("==" | "!=") comparison )* ;
 #comparison -> term ( (">" | ">=" | "<" | "<=") term )* ;
 #term       -> factor ( ("+" | "-") factor )* ;
 #factor     -> unary ( ("*" | "/") unary )* ;
 #unary      -> ("!" | "-") unary | primary ;
-#primary    -> NUMBER | WORD | "true" | "false" | "nil"
+#primary    -> NUMBER | WORD | LABEL | "true" | "false" | "nil"
 #            | "(" expression ")" ;
 
 #operators at the same binary level group from left to right, like (8 - 3) - 1
 
-from expression import Binary, Group, Literal, Unary
-from statement import ExpressionStatement, ShowStatement
+from expression import Assign, Binary, Group, Literal, Unary, Variable
+from statement import ExpressionStatement, ShowStatement, VarStatement
 
 class ParseError(Exception):
     #separate error type so we can catch parser errors in main
@@ -34,9 +38,8 @@ class Parser:
         statements = []
 
         while not self.isAtEnd():
-            #try statements one at a time so we can collect erros during fallback mode
             try:
-                statements.append(self.statement())
+                statements.append(self.declaration())
             except ParseError as error:
                 self.errors.append(str(error))
                 self.fallbackMode()
@@ -47,13 +50,33 @@ class Parser:
         while not self.isAtEnd():
             token = self.peek()
 
-            if token.type == "KEYWORD" and token.keyword == "SHOW":
+            if token.type == "KEYWORD" and token.keyword in ("SHOW", "LET", "VAR"):
                 return
 
             self.advance()
 
             if token.type == "SYMBOL" and token.symbol == "SEMICOLON":
                 return
+
+    def declaration(self):
+        token = self.peek()
+        if token.type == "KEYWORD" and token.keyword in ("LET", "VAR"):
+            self.advance()
+            return self.varDeclaration()
+        return self.statement()
+
+    def varDeclaration(self):
+        if self.peek().type != "LABEL":
+            raise self.error("Expected a variable name.")
+        name = self.advance()
+
+        initializer = None
+        if self.matchSymbols("EQUAL"):
+            initializer = self.expression()
+
+        if not self.matchSymbols("SEMICOLON"):
+            raise self.error("Expected ';' after variable declaration.")
+        return VarStatement(name, initializer)
 
     def statement(self):
         token = self.peek()
@@ -62,7 +85,6 @@ class Parser:
             self.advance()
             return self.showStatement()
 
-        #if its now a SHOW/print then it is treated as an expression
         return self.expressionStatement()
 
     def showStatement(self):
@@ -89,13 +111,25 @@ class Parser:
 
 
     def comma(self):
-        expression = self.equality()
+        expression = self.assignment()
 
         #keep combining from the left so 1, 2, 3 becomes (, (, 1 2) 3)
         while self.matchSymbols("COMMA"):
             operator = self.previous()
-            right = self.equality()
+            right = self.assignment()
             expression = Binary(expression, operator, right)
+        return expression
+
+
+    def assignment(self):
+        expression = self.equality()
+        if self.matchSymbols("EQUAL"):
+            operator = self.previous()
+            #recurse on the right so a = b = 3 assigns b before a
+            value = self.assignment()
+            if not isinstance(expression, Variable):
+                raise self.error("Invalid assignment target.", operator)
+            return Assign(expression.name, value)
         return expression
 
 
@@ -152,6 +186,9 @@ class Parser:
 
     def primary(self):
         token = self.peek()
+
+        if token.type == "LABEL":
+            return Variable(self.advance())
 
         #scanner already got the value for numbers and words
         if token.type in ("NUMBER", "WORD"):
@@ -215,11 +252,12 @@ class Parser:
         return self.peek().type == "EOF"
 
 
-    def error(self, message):
-        token = self.peek()
+    def error(self, message, token=None):
+        if token is None:
+            token = self.peek()
 
         #EOF has no text, so say end of input instead
-        if self.isAtEnd():
+        if token.type == "EOF":
             location = "end of input"
         else:
             location = repr(token.raw)

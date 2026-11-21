@@ -96,10 +96,10 @@ syntaxErrorCases = [
     ("(* 2)", "[line 1] Error at '*': Missing left operand before '*'."),
     ("! == 2", "[line 1] Error at '==': Missing left operand before '=='."),
     ("*", "[line 1] Error at '*': Missing left operand before '*'."),
-    ("name", "[line 1] Error at 'name': Expected an expression."),
+    ("name", "[line 1] Error at end of input: Expected ';' after expression."),
     ("show 1", "[line 1] Error at end of input: Expected ';' after SHOW statement."),
     ("1 2", "[line 1] Error at '2': Expected ';' after expression."),
-    ("1 = 2", "[line 1] Error at '=': Expected ';' after expression."),
+    ("1 = 2;", "[line 1] Error at '=': Invalid assignment target."),
     ("true and false", "[line 1] Error at 'and': Expected ';' after expression."),
     ("true or false", "[line 1] Error at 'or': Expected ';' after expression.")
 ]

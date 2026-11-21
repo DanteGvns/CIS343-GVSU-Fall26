@@ -1,6 +1,6 @@
 from astPrinter import AstPrinter
-from expression import Binary, Group, Literal, Unary
-from statement import ExpressionStatement, ShowStatement
+from expression import Assign, Binary, Group, Literal, Unary, Variable
+from statement import ExpressionStatement, ShowStatement, VarStatement
 
 class EvaluationError(Exception):
     #lets nios print evaluation errors without a Python traceback
@@ -15,6 +15,7 @@ def is_truthy(value):
 class Evaluator:
     def __init__(self, on_step=None):
         self.on_step = on_step
+        self.scopes = [{}]
 
     def execute(self, statement):
         if isinstance(statement, ExpressionStatement):
@@ -27,8 +28,24 @@ class Evaluator:
             else:
                 print(AstPrinter().print(Literal(value)))
 
+        elif isinstance(statement, VarStatement):
+            scope = self.scopes[-1]
+            name = statement.name
+            if name.raw in scope:
+                raise self.error(name, "Variable already declared in this scope.")
+            value = None
+            if statement.initializer is not None:
+                value = self.evaluate(statement.initializer)
+            scope[name.raw] = value
+
         else:
             raise EvaluationError("Unsupported statement type.")
+
+    def findScope(self, name):
+        for scope in reversed(self.scopes):
+            if name.raw in scope:
+                return scope
+        raise self.error(name, "Undefined variable.")
 
     def evaluate(self, expression):
         if isinstance(expression, Literal):
@@ -37,7 +54,14 @@ class Evaluator:
         if isinstance(expression, Group):
             return self.evaluate(expression.expression)
 
-        if isinstance(expression, Unary):
+        if isinstance(expression, Variable):
+            value = self.findScope(expression.name)[expression.name.raw]
+
+        elif isinstance(expression, Assign):
+            value = self.evaluate(expression.value)
+            self.findScope(expression.name)[expression.name.raw] = value
+
+        elif isinstance(expression, Unary):
             operand = self.evaluate(expression.operand)
             operator = expression.operator
             if operator.symbol == "BANG":

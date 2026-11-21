@@ -1,7 +1,7 @@
 import json
 
-from expression import Binary, Group, Literal, Unary
-from statement import ExpressionStatement, ShowStatement
+from expression import Assign, Binary, Group, Literal, Unary, Variable
+from statement import ExpressionStatement, ShowStatement, VarStatement
 
 class AstPrinter:
     def print(self, expression):
@@ -11,6 +11,17 @@ class AstPrinter:
         if isinstance(expression, ShowStatement):
             return self.parenthesize("show", expression.expression)
 
+        if isinstance(expression, VarStatement):
+            name = "var " + expression.name.raw
+            if expression.initializer is None:
+                return self.parenthesize(name)
+            return self.parenthesize(name, expression.initializer)
+
+        if isinstance(expression, Variable):
+            return expression.name.raw
+
+        if isinstance(expression, Assign):
+            return self.parenthesize("= " + expression.name.raw, expression.value)
 
         #use the operator text instead of the full token output
         if isinstance(expression, Binary):

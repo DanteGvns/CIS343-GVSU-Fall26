@@ -10,3 +10,9 @@ class ExpressionStatement(Statement):
 class ShowStatement(Statement):
     def __init__(self, expression):
         self.expression = expression
+
+
+class VarStatement(Statement):
+    def __init__(self, name, initializer):
+        self.name = name
+        self.initializer = initializer

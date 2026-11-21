@@ -3,7 +3,6 @@ from scanner import Scanner
 from parser import Parser, ParseError
 from astPrinter import AstPrinter
 from evaluator import EvaluationError, Evaluator, TracePrinter
-from expression import Literal
 
 def main():
     #skip the program name and separate output flags from the file path
@@ -25,11 +24,12 @@ def main():
 
     if not files:
         print("REPL mode")
+        evaluator = Evaluator()
         try:
             #loop always getting user input
             while True:
                 userInput = input()
-                scanSource(userInput, showAst, parseOnly, scanOnly)
+                scanSource(userInput, showAst, parseOnly, scanOnly, evaluator)
 
         #exit the program with Ctrl + C
         except (KeyboardInterrupt, EOFError):
@@ -39,7 +39,7 @@ def main():
         scanFile(files[0], showAst, parseOnly, scanOnly)
 
 
-def scanSource(source, showAst=False, parseOnly=False, scanOnly=False):
+def scanSource(source, showAst=False, parseOnly=False, scanOnly=False, evaluator=None):
     scanner = Scanner(source)
     tokens = scanner.scanTokens()
 
@@ -77,6 +77,9 @@ def scanSource(source, showAst=False, parseOnly=False, scanOnly=False):
     if showAst:
         print(source.strip())
 
+    if evaluator is None:
+        evaluator = Evaluator()
+
     for statement in statements:
         if showAst:
             print(AstPrinter().print(statement))
@@ -86,15 +89,16 @@ def scanSource(source, showAst=False, parseOnly=False, scanOnly=False):
                 trace.reduced[node] = value
                 print(trace.print(statement))
 
-            evaluator = Evaluator(on_step=show_step)
-        else:
-            evaluator = Evaluator()
+            evaluator.on_step = show_step
 
         try:
             evaluator.execute(statement)
         except EvaluationError as error:
             print(error)
             return
+        finally:
+            if showAst:
+                evaluator.on_step = None
 
 
 def scanFile(inputFile, showAst=False, parseOnly=False, scanOnly=False):
