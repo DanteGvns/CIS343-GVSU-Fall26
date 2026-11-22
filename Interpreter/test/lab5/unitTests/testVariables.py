@@ -28,6 +28,12 @@ class VariablesTestCase(unittest.TestCase):
     def testVariables(self):
         self.checkFile("variables", "2\n5\nnil\n9\n9\n9\n")
 
+    def testLetIsTheDeclarationKeyword(self):
+        self.assertEqual(
+            self.runNios(userInput="var count = 1;\nlet var = 2; show var;\n"),
+            "REPL mode\n[line 1] Error at 'count': Expected ';' after expression.\n2\n"
+        )
+
     def testShowIsTheOutputKeyword(self):
         self.assertEqual(
             self.runNios(userInput="print 2;\nlet print = 3; show print;\n"),
@@ -51,7 +57,7 @@ class VariablesTestCase(unittest.TestCase):
         self.assertEqual(output, "REPL mode\n3\n1\n4\n")
 
     def testAssignmentPrecedence(self):
-        output = self.runNios(userInput="var a; show a = 2 + 3, a == 5;\nshow a;\n")
+        output = self.runNios(userInput="let a; show a = 2 + 3, a == 5;\nshow a;\n")
         self.assertEqual(output, "REPL mode\ntrue\n5\n")
 
     def testSyntaxErrors(self):
@@ -86,7 +92,7 @@ class VariablesTestCase(unittest.TestCase):
             "[line 2] Error at 'count': Variable already declared in this scope.\n"
         )
         self.checkFile("scopeErrors", "inside\n[line 5] Error at 'local': Undefined variable.\n")
-        for source in ("show x; var x = 1;", "var x = x;", "x = 1; var x;"):
+        for source in ("show x; let x = 1;", "let x = x;", "x = 1; let x;"):
             with self.subTest(source=source):
                 self.assertEqual(
                     self.runNios(userInput=source + "\n"),
@@ -102,11 +108,11 @@ class VariablesTestCase(unittest.TestCase):
     def testAstAndTraceModes(self):
         self.assertEqual(
             self.runNios("-p", userInput="let a; { a = 2; show a; }\n"),
-            "REPL mode\n(var a)\n(block (expr (= a 2)) (show a))\n"
+            "REPL mode\n(let a)\n(block (expr (= a 2)) (show a))\n"
         )
         self.assertEqual(
-            self.runNios("-a", userInput="var a = 1; show a;\n"),
-            "REPL mode\nvar a = 1; show a;\n(var a 1)\n(show a)\n(show (1))\n1\n"
+            self.runNios("-a", userInput="let a = 1; show a;\n"),
+            "REPL mode\nlet a = 1; show a;\n(let a 1)\n(show a)\n(show (1))\n1\n"
         )
 
 

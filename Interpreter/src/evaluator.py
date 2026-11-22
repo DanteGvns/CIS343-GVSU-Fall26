@@ -1,6 +1,6 @@
 from astPrinter import AstPrinter
 from expression import Assign, Binary, Group, Literal, Unary, Variable
-from statement import BlockStatement, ExpressionStatement, ShowStatement, VarStatement
+from statement import BlockStatement, ExpressionStatement, LetStatement, ShowStatement
 
 class EvaluationError(Exception):
     #lets nios print evaluation errors without a Python traceback
@@ -28,7 +28,7 @@ class Evaluator:
             else:
                 print(AstPrinter().print(Literal(value)))
 
-        elif isinstance(statement, VarStatement):
+        elif isinstance(statement, LetStatement):
             scope = self.scopes[-1]
             name = statement.name
             if name.raw in scope:

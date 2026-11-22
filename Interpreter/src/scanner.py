@@ -13,7 +13,6 @@ class Scanner:
         "or": "OR",
         "show": "SHOW",
         "true": "TRUE",
-        "var": "VAR",
         "while": "WHILE"
     }
 

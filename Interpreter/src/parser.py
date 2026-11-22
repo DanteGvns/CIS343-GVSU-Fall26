@@ -1,8 +1,8 @@
 #nios expression grammar
 #each rule calls the next one to handle higher priority operators first
 #program       -> declaration* EOF ;
-#declaration   -> varDecl | statement ;
-#varDecl       -> ("let" | "var") LABEL ("=" expression)? ";" ;
+#declaration   -> letDecl | statement ;
+#letDecl       -> "let" LABEL ("=" expression)? ";" ;
 #statement     -> showStmt | block | expressionStmt ;
 #showStmt      -> "show" expression ";" ;
 #block         -> "{" declaration* "}" ;
@@ -21,7 +21,7 @@
 #operators at the same binary level group from left to right, like (8 - 3) - 1
 
 from expression import Assign, Binary, Group, Literal, Unary, Variable
-from statement import BlockStatement, ExpressionStatement, ShowStatement, VarStatement
+from statement import BlockStatement, ExpressionStatement, LetStatement, ShowStatement
 
 class ParseError(Exception):
     #separate error type so we can catch parser errors in main
@@ -65,7 +65,7 @@ class Parser:
             if self.checkSymbols("LEFT_BRACE", "RIGHT_BRACE"):
                 return
 
-            if token.type == "KEYWORD" and token.keyword in ("SHOW", "LET", "VAR"):
+            if token.type == "KEYWORD" and token.keyword in ("SHOW", "LET"):
                 return
 
             self.advance()
@@ -75,12 +75,12 @@ class Parser:
 
     def declaration(self):
         token = self.peek()
-        if token.type == "KEYWORD" and token.keyword in ("LET", "VAR"):
+        if token.type == "KEYWORD" and token.keyword == "LET":
             self.advance()
-            return self.varDeclaration()
+            return self.letDeclaration()
         return self.statement()
 
-    def varDeclaration(self):
+    def letDeclaration(self):
         if self.peek().type != "LABEL":
             raise self.error("Expected a variable name.")
         name = self.advance()
@@ -91,7 +91,7 @@ class Parser:
 
         if not self.matchSymbols("SEMICOLON"):
             raise self.error("Expected ';' after variable declaration.")
-        return VarStatement(name, initializer)
+        return LetStatement(name, initializer)
 
     def statement(self):
         token = self.peek()

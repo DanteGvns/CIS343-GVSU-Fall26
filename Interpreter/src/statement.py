@@ -12,7 +12,7 @@ class ShowStatement(Statement):
         self.expression = expression
 
 
-class VarStatement(Statement):
+class LetStatement(Statement):
     def __init__(self, name, initializer):
         self.name = name
         self.initializer = initializer

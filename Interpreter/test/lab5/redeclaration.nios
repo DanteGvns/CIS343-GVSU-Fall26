@@ -1,2 +1,2 @@
-var count = 1;
+let count = 1;
 let count = 2;
